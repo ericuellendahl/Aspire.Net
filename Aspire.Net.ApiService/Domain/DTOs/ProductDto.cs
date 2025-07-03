@@ -1,4 +1,4 @@
-﻿namespace Int.Database.Domain.DTOs
+﻿namespace Aspire.Net.ApiService.Domain.DTOs
 {
     public class ProductDto
     {

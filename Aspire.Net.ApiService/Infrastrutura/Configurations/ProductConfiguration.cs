@@ -1,8 +1,8 @@
-﻿using Int.Database.Domain.Entities;
+﻿using Aspire.Net.ApiService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Int.Database.Infrastrutura.Repositories;
+namespace Aspire.Net.ApiService.Infrastrutura.Configurations;
 
 public class ProductConfiguration : IEntityTypeConfiguration<Product>
 {

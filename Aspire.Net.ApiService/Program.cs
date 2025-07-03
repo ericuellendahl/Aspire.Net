@@ -1,6 +1,6 @@
-using Int.Database.Application.Services;
-using Int.Database.Domain.Interfaces;
-using Int.Database.Infrastrutura.Repositories;
+using Aspire.Net.ApiService.Application.Services;
+using Aspire.Net.ApiService.Domain.Interfaces;
+using Aspire.Net.ApiService.Infrastrutura.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);

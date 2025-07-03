@@ -1,6 +1,6 @@
-﻿using Int.Database.Domain.DTOs;
+﻿using Aspire.Net.ApiService.Domain.DTOs;
 
-namespace Int.Database.Domain.Interfaces
+namespace Aspire.Net.ApiService.Domain.Interfaces
 {
     public interface IProductService
     {

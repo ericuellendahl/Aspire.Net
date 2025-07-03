@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Int.Database.Domain.Entities
+namespace Aspire.Net.ApiService.Domain.Entities
 {
     public class Product
     {

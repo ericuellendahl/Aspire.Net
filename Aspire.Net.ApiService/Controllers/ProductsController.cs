@@ -1,7 +1,7 @@
-﻿using Int.Database.Domain.Interfaces;
+﻿using Aspire.Net.ApiService.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Int.Database.Controllers;
+namespace Aspire.Net.ApiService.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

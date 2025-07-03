@@ -1,14 +1,11 @@
-﻿using Int.Database.Domain.Entities;
+﻿using Aspire.Net.ApiService.Domain.Entities;
+using Aspire.Net.ApiService.Infrastrutura.Configurations;
 using Microsoft.EntityFrameworkCore;
 
-namespace Int.Database.Infrastrutura.Repositories
+namespace Aspire.Net.ApiService.Infrastrutura.Repositories
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
-        {
-        }
-
         public DbSet<Product> Products { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

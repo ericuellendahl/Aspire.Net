@@ -7,7 +7,7 @@ namespace Aspire.Net.Web.ApiClienties
         public async Task<ProductResponse[]> GetProductsAsync(int maxItems = 10, CancellationToken cancellationToken = default)
         {
             List<ProductResponse>? products = null;
-            await foreach (var product in httpClient.GetFromJsonAsAsyncEnumerable<ProductResponse>("/api/products", cancellationToken))
+            await foreach (var product in httpClient.GetFromJsonAsAsyncEnumerable<ProductResponse>("/api/Products", cancellationToken))
             {
                 if (products?.Count >= maxItems)
                 {

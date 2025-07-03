@@ -1,10 +1,10 @@
-﻿using Int.Database.Domain.DTOs;
-using Int.Database.Domain.Entities;
-using Int.Database.Domain.Interfaces;
-using Int.Database.Infrastrutura.Repositories;
+﻿using Aspire.Net.ApiService.Domain.DTOs;
+using Aspire.Net.ApiService.Domain.Entities;
+using Aspire.Net.ApiService.Domain.Interfaces;
+using Aspire.Net.ApiService.Infrastrutura.Repositories;
 using Microsoft.EntityFrameworkCore;
 
-namespace Int.Database.Application.Services
+namespace Aspire.Net.ApiService.Application.Services
 {
     public class ProductService(ApplicationDbContext context, ILogger<ProductService> logger) : IProductService
     {

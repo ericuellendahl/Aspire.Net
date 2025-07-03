@@ -1,4 +1,3 @@
-using Aspire.Net.Web;
 using Aspire.Net.Web.ApiClienties;
 using Aspire.Net.Web.Components;
 
@@ -41,4 +40,4 @@ app.MapRazorComponents<App>()
 
 app.MapDefaultEndpoints();
 
-app.Run();
+await app.RunAsync();
