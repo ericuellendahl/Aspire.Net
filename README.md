@@ -2,6 +2,8 @@
 
 Este projeto é uma API construída com **.NET 8** utilizando o ecossistema **.NET Aspire**, focada em modularidade, observabilidade e escalabilidade. A solução está preparada para ambientes cloud-native e oferece integração com ferramentas modernas como **OpenTelemetry**, **Swagger** e suporte completo para containerização com **Docker**.
 
+O objetivo deste projeto é promover a evolução contínua e melhorias constantes, visando o aprendizado e aprimoramento técnico.
+
 ## ✅ Tecnologias Utilizadas
 
 - ASP.NET Core 8
@@ -9,10 +11,11 @@ Este projeto é uma API construída com **.NET 8** utilizando o ecossistema **.N
 - OpenTelemetry
 - Swagger (Swashbuckle)
 - Docker 
-- Clean Architecture (opcional)
+- Clean Architecture (opcional) (separação em pasta por enquanto)
 - Injeção de Dependência
 - Middleware customizado
 - Observabilidade nativa
+- Worker Consumer do RabbitMQ
 
 ## ⚙️ Configuração
 
