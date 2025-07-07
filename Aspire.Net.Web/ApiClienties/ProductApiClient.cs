@@ -15,7 +15,7 @@ namespace Aspire.Net.Web.ApiClienties
                 }
                 if (product is not null)
                 {
-                    products ??= new List<ProductResponse>();
+                    products ??= [];
                     products.Add(product);
                 }
             }

@@ -1,7 +1,7 @@
 ﻿using Aspire.Net.ApiService.Domain.DTOs;
 using Aspire.Net.ApiService.Domain.Entities;
 using Aspire.Net.ApiService.Domain.Interfaces;
-using Aspire.Net.ApiService.Infrastrutura.Repositories;
+using Aspire.Net.ApiService.Infrastrutura.Contexts;
 using Microsoft.EntityFrameworkCore;
 
 namespace Aspire.Net.ApiService.Application.Services
@@ -12,7 +12,7 @@ namespace Aspire.Net.ApiService.Application.Services
         private readonly ApplicationDbContext _context = context;
         private readonly ILogger<ProductService> _logger = logger;
 
-        public async Task<IEnumerable<ProductDto>> GetAllProductsAsync()
+        public async Task<IEnumerable<ProductDto>?> GetAllProductsAsync()
         {
             _logger.LogInformation("Fetching all active products from the database.");
 
