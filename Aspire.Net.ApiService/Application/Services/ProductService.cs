@@ -1,18 +1,21 @@
 ﻿using Aspire.Net.ApiService.Domain.DTOs;
 using Aspire.Net.ApiService.Domain.Entities;
 using Aspire.Net.ApiService.Domain.Interfaces;
+using Aspire.Net.ApiService.Infrastrutura.Brokers;
 using Aspire.Net.ApiService.Infrastrutura.Repositories;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace Aspire.Net.ApiService.Application.Services
 {
-    public class ProductService(ApplicationDbContext context, ILogger<ProductService> logger) : IProductService
+    public class ProductService(ApplicationDbContext context, ILogger<ProductService> logger, PagamentoProducerMQ pagamentoProducer) : IProductService
     {
 
         private readonly ApplicationDbContext _context = context;
         private readonly ILogger<ProductService> _logger = logger;
+        private readonly PagamentoProducerMQ _pagamentoProducer = pagamentoProducer;
 
-        public async Task<IEnumerable<ProductDto>> GetAllProductsAsync()
+        public async Task<IEnumerable<ProductDto>?> GetAllProductsAsync()
         {
             _logger.LogInformation("Fetching all active products from the database.");
 
@@ -22,7 +25,15 @@ namespace Aspire.Net.ApiService.Application.Services
                                         .OrderBy(p => p.Name)
                                         .ToListAsync();
 
-            return products.Select(MapToDto);
+            var productDto = products.Select(MapToDto);
+
+            if (productDto.Any())
+            {
+                var json = JsonSerializer.Serialize(productDto);
+                _pagamentoProducer.EnviarMensagem(json);
+            }
+
+            return productDto;
         }
 
         public async Task<ProductDto?> GetProductByIdAsync(int id)

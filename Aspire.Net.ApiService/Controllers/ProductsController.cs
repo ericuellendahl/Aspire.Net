@@ -22,6 +22,7 @@ public class ProductsController(IProductService productService, ILogger<Products
             _logger.LogInformation("Iniciando a busca por todos os produtos ativos.");
 
             var products = await _productService.GetAllProductsAsync();
+
             return Ok(products);
         }
         catch (Exception ex)

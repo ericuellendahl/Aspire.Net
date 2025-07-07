@@ -1,5 +1,7 @@
 using Aspire.Net.ApiService.Application.Services;
 using Aspire.Net.ApiService.Domain.Interfaces;
+using Aspire.Net.ApiService.Domain.Settings;
+using Aspire.Net.ApiService.Infrastrutura.Brokers;
 using Aspire.Net.ApiService.Infrastrutura.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,6 +19,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddTransient<PagamentoProducerMQ>();
+
+builder.Services.Configure<RabbitMQSettings>(builder.Configuration.GetSection("RabbitMQSettings"));
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
