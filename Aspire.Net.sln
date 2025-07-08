@@ -6,8 +6,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aspire.Net.AppHost", "Aspir
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aspire.Net.ServiceDefaults", "Aspire.Net.ServiceDefaults\Aspire.Net.ServiceDefaults.csproj", "{B6238E44-21CC-9EA0-0669-33619199E43A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aspire.Net.ApiService", "Aspire.Net.ApiService\Aspire.Net.ApiService.csproj", "{27C0F0DD-DA19-DE52-CEE8-ABD34588BCF7}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aspire.Net.Web", "Aspire.Net.Web\Aspire.Net.Web.csproj", "{B0D1895D-3AFE-7A48-1C29-647C5920385F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aspire.Net.Tests", "Aspire.Net.Tests\Aspire.Net.Tests.csproj", "{03F28E71-B4C8-1F2C-C2C7-80C0714195B7}"
@@ -24,6 +22,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "5.Worker", "5.Worker", "{FB
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Apire.Worker", "Apire.Worker\Apire.Worker.csproj", "{DBF84093-0EC2-4314-AAEC-4DEE3670E8B9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aspire.Net.ApiService", "Aspire.Net.ApiService\Aspire.Net.ApiService.csproj", "{27C0F0DD-DA19-DE52-CEE8-ABD34588BCF7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,10 +38,6 @@ Global
 		{B6238E44-21CC-9EA0-0669-33619199E43A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B6238E44-21CC-9EA0-0669-33619199E43A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B6238E44-21CC-9EA0-0669-33619199E43A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{27C0F0DD-DA19-DE52-CEE8-ABD34588BCF7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{27C0F0DD-DA19-DE52-CEE8-ABD34588BCF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{27C0F0DD-DA19-DE52-CEE8-ABD34588BCF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{27C0F0DD-DA19-DE52-CEE8-ABD34588BCF7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B0D1895D-3AFE-7A48-1C29-647C5920385F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B0D1895D-3AFE-7A48-1C29-647C5920385F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B0D1895D-3AFE-7A48-1C29-647C5920385F}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -54,6 +50,10 @@ Global
 		{DBF84093-0EC2-4314-AAEC-4DEE3670E8B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DBF84093-0EC2-4314-AAEC-4DEE3670E8B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DBF84093-0EC2-4314-AAEC-4DEE3670E8B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27C0F0DD-DA19-DE52-CEE8-ABD34588BCF7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27C0F0DD-DA19-DE52-CEE8-ABD34588BCF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27C0F0DD-DA19-DE52-CEE8-ABD34588BCF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27C0F0DD-DA19-DE52-CEE8-ABD34588BCF7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -61,10 +61,10 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{4E059887-439B-407E-881B-E89CEE276DAF} = {82785C65-2157-453F-B086-A75E7290D786}
 		{B6238E44-21CC-9EA0-0669-33619199E43A} = {82785C65-2157-453F-B086-A75E7290D786}
-		{27C0F0DD-DA19-DE52-CEE8-ABD34588BCF7} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{B0D1895D-3AFE-7A48-1C29-647C5920385F} = {C56DD02B-9B77-4567-BBB3-E7CEFA17889D}
 		{03F28E71-B4C8-1F2C-C2C7-80C0714195B7} = {FBD48A8E-63D7-49BC-AFC8-03B277DAE27A}
 		{DBF84093-0EC2-4314-AAEC-4DEE3670E8B9} = {FBABC4EF-3AF4-4A4F-8B44-A2B2F76CCA28}
+		{27C0F0DD-DA19-DE52-CEE8-ABD34588BCF7} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0449611D-B898-40F5-8162-5BFE1DD53104}
