@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Apire.Worker\Apire.Worker.csproj" />
+    <ProjectReference Include="..\Aspire.ApiGateway\Aspire.ApiGateway.csproj" />
     <ProjectReference Include="..\Aspire.Net.ApiService\Aspire.Net.ApiService.csproj" />
     <ProjectReference Include="..\Aspire.Net.Web\Aspire.Net.Web.csproj" />
   </ItemGroup>
