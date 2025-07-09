@@ -11,6 +11,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Apire.Worker\Apire.Worker.csproj" />
+<<<<<<< HEAD
+=======
+    <ProjectReference Include="..\Aspire.ApiGateway\Aspire.ApiGateway.csproj" />
+>>>>>>> dev
     <ProjectReference Include="..\Aspire.Net.ApiService\Aspire.Net.ApiService.csproj" />
     <ProjectReference Include="..\Aspire.Net.Web\Aspire.Net.Web.csproj" />
   </ItemGroup>

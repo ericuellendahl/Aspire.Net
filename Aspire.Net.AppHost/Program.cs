@@ -4,9 +4,19 @@ var apiService = builder.AddProject<Projects.Aspire_Net_ApiService>("apiservice"
 
 var worker = builder.AddProject<Projects.Apire_Worker>("worker");
 
+<<<<<<< HEAD
 builder.AddProject<Projects.Aspire_Net_Web>("webfrontend")
     .WithExternalHttpEndpoints()
     .WithReference(apiService)
     .WithReference(worker);
+=======
+var apigateway = builder.AddProject<Projects.Aspire_ApiGateway>("apigateway");
+
+builder.AddProject<Projects.Aspire_Net_Web>("webfrontend")
+    .WithExternalHttpEndpoints()
+    .WithReference(apiService)
+    .WithReference(worker)
+    .WithReference(apigateway);
+>>>>>>> dev
 
 builder.Build().Run();

@@ -50,5 +50,9 @@ Você pode utilizar ferramentas como **Postman**, **curl** ou o próprio **Swagg
 
 ## 📄 Licença
 
+<<<<<<< HEAD
 Este projeto está licenciado sob a [MIT License](LICENSE).
 
+=======
+Este projeto está licenciado sob a [MIT License](LICENSE).
+>>>>>>> dev
