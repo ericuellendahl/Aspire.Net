@@ -18,13 +18,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3.Aspire.AppHost", "3.Aspir
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "4.Aspire.Tests", "4.Aspire.Tests", "{FBD48A8E-63D7-49BC-AFC8-03B277DAE27A}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "5.Worker", "5.Worker", "{FBABC4EF-3AF4-4A4F-8B44-A2B2F76CCA28}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "5.Aspire.Worker", "5.Aspire.Worker", "{FBABC4EF-3AF4-4A4F-8B44-A2B2F76CCA28}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Apire.Worker", "Apire.Worker\Apire.Worker.csproj", "{DBF84093-0EC2-4314-AAEC-4DEE3670E8B9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aspire.Net.ApiService", "Aspire.Net.ApiService\Aspire.Net.ApiService.csproj", "{27C0F0DD-DA19-DE52-CEE8-ABD34588BCF7}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "6.Aspire.ApiGateway", "6.Aspire.ApiGateway", "{A4A39CA1-7303-4847-B909-C787A327C60E}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "6.Aspire.Gateway", "6.Aspire.Gateway", "{A4A39CA1-7303-4847-B909-C787A327C60E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aspire.ApiGateway", "Aspire.ApiGateway\Aspire.ApiGateway.csproj", "{643396FA-6834-4A44-97EA-17E49B55BDFA}"
 EndProject
