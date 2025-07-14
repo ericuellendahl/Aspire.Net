@@ -6,21 +6,32 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Aspire.Net.ApiService.Application.Services
 {
-    public class ProductService(ApplicationDbContext context, ILogger<ProductService> logger) : IProductService
+    public class ProductService(ApplicationDbContext context, ILogger<ProductService> logger, CacheService cacheService) : IProductService
     {
 
         private readonly ApplicationDbContext _context = context;
         private readonly ILogger<ProductService> _logger = logger;
+        private readonly CacheService _cacheService = cacheService;
+
+        const string keyProducts = "products";
 
         public async Task<IEnumerable<ProductDto>?> GetAllProductsAsync()
         {
             _logger.LogInformation("Fetching all active products from the database.");
+
+            var cachedProducts = await _cacheService.GetAsync<IEnumerable<ProductDto>>(keyProducts);
+            if (cachedProducts != null)
+            {
+                return cachedProducts;
+            }
 
             var products = await _context.Products
                                         .AsNoTracking()
                                         .Where(p => p.IsActive)
                                         .OrderBy(p => p.Name)
                                         .ToListAsync();
+
+            await _cacheService.SetAsync(keyProducts, products.Select(MapToDto), TimeSpan.FromMinutes(10));
 
             return products.Select(MapToDto);
         }
