@@ -56,15 +56,14 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 builder.Services.AddSingleton<ICacheRepository, RedisCacheRepository>();
 builder.Services.AddSingleton<CacheService>();
 
-string? connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+string? connectionString = builder.Configuration.GetConnectionString("PostgreConnection");
 
 builder.Services.AddHealthChecks()
-    .AddRedis(redisSettings.ConnectionString, name: "redis")
+    .AddRedis($"{redisSettings.Host}:{redisSettings.Port},password={redisSettings.Password},abortConnect=false", name: "redis")
     .AddNpgSql(connectionString, name: "postgresql", failureStatus: HealthStatus.Unhealthy, tags: ["db", "sql", "postgres"]);
 
 builder.Services.AddHealthChecksUI(options =>
 {
-    options.SetEvaluationTimeInSeconds(10);
     options.AddHealthCheckEndpoint("API", "/health");
 }).AddInMemoryStorage();
 
