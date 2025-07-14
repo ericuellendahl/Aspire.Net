@@ -1,4 +1,5 @@
 ﻿using Aspire.Net.ApiService.Domain.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Aspire.Net.ApiService.Controllers;
@@ -15,6 +16,7 @@ public class ProductsController(IProductService productService, ILogger<Products
     /// </summary>
     /// <returns>Lista de produtos</returns>
     [HttpGet]
+    [Authorize]
     public async Task<IActionResult> GetAllProducts()
     {
         try
