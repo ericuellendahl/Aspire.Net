@@ -4,11 +4,15 @@ using Aspire.Net.ApiService.Domain.Settings;
 using Aspire.Net.ApiService.Infrastrutura.Brokers;
 using Aspire.Net.ApiService.Infrastrutura.Contexts;
 using Aspire.Net.ApiService.Infrastrutura.Repositories;
+using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using StackExchange.Redis;
 using System.Reflection;
 using System.Text;
 
@@ -31,10 +35,38 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 builder.Services.AddTransient<PagamentoProducerMQ>();
-
 builder.Services.Configure<RabbitMQSettings>(builder.Configuration.GetSection("RabbitMQSettings"));
 
+
+var redisSettings = builder.Configuration.GetSection("Redis").Get<RedisSettings>();
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+{
+    var options = new ConfigurationOptions
+    {
+        EndPoints = { { redisSettings.Host, redisSettings.Port } },
+        User = redisSettings.User,
+        Password = redisSettings.Password,
+        AbortOnConnectFail = false
+    };
+
+    return ConnectionMultiplexer.Connect(options);
+});
+
+
+builder.Services.AddSingleton<ICacheRepository, RedisCacheRepository>();
+builder.Services.AddSingleton<CacheService>();
+
 string? connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.AddHealthChecks()
+    .AddRedis(redisSettings.ConnectionString, name: "redis")
+    .AddNpgSql(connectionString, name: "postgresql", failureStatus: HealthStatus.Unhealthy, tags: ["db", "sql", "postgres"]);
+
+builder.Services.AddHealthChecksUI(options =>
+{
+    options.SetEvaluationTimeInSeconds(10);
+    options.AddHealthCheckEndpoint("API", "/health");
+}).AddInMemoryStorage();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
                                                     options.UseNpgsql(connectionString, npgsqlOptions =>
@@ -42,11 +74,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 .UseSnakeCaseNamingConvention());
 
 // Configuração do JWT
-var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var secretKey = jwtSettings["SecretKey"];
-var issuer = jwtSettings["Issuer"];
-var audience = jwtSettings["Audience"];
-
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -54,15 +81,17 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
+    var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = issuer,
-        ValidAudience = audience,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
+        ValidIssuer = jwtSettings["Issuer"],
+        ValidAudience = jwtSettings["Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"])),
         ClockSkew = TimeSpan.Zero
     };
 });
@@ -138,7 +167,17 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Aspire.Net API v1");
-        //c.RoutePrefix = string.Empty; // Swagger na raiz
+    });
+
+    // Configurar endpoint de health check
+    app.MapHealthChecks("/health", new HealthCheckOptions
+    {
+        ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse // importante!
+    });
+    app.MapHealthChecksUI(options =>
+    {
+        options.UIPath = "/hc-ui";
+        options.ApiPath = "/hc-json";
     });
 }
 
