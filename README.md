@@ -50,9 +50,10 @@ Você pode utilizar ferramentas como **Postman**, **curl** ou o próprio **Swagg
 
 ## 📄 Licença
 
-<<<<<<< HEAD
 Este projeto está licenciado sob a [MIT License](LICENSE).
 
-=======
-Este projeto está licenciado sob a [MIT License](LICENSE).
->>>>>>> dev
+## Documentação
+
+YARP Reverse Proxy
+
+https://learn.microsoft.com/pt-br/aspnet/core/fundamentals/servers/yarp/getting-started?view=aspnetcore-9.0

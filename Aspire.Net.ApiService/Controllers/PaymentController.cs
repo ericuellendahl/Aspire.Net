@@ -1,5 +1,6 @@
 ﻿using Aspire.Net.ApiService.Domain.DTOs;
 using Aspire.Net.ApiService.Domain.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Aspire.Net.ApiService.Controllers;
@@ -13,6 +14,7 @@ public class PaymentController(ILogger<PaymentController> logger, IPaymentServic
 
 
     [HttpPost]
+    [Authorize]
     public async Task<ActionResult<PaymentResponseDto>> CriarPagamento([FromBody] PaymentRequestDto dto)
     {
         try
