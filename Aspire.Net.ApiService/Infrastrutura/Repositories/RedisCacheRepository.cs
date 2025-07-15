@@ -1,6 +1,4 @@
 ﻿using Aspire.Net.ApiService.Domain.Interfaces;
-using Aspire.Net.ApiService.Domain.Settings;
-using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 using System.Text.Json;
 
@@ -14,18 +12,6 @@ namespace Aspire.Net.ApiService.Infrastrutura.Repositories
         {
             _muxer = muxer;
         }
-
-        //public RedisCacheRepository()
-        //{
-        //    var settings = redisSettings.Value;
-        //    var config = new ConfigurationOptions
-        //    {
-        //        EndPoints = { { settings.Host, settings.Port } },
-        //        User = settings.User,
-        //        Password = settings.Password
-        //    };
-        //    _muxer = ConnectionMultiplexer.Connect(config);
-        //}
 
         public async Task SetAsync<T>(string key, T value, TimeSpan? expiry = null)
         {

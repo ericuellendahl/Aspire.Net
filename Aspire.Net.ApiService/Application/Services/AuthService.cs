@@ -4,7 +4,6 @@ using Aspire.Net.ApiService.Domain.Interfaces;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace Aspire.Net.ApiService.Application.Services;
@@ -74,7 +73,7 @@ public class AuthService : IAuthService
                 PasswordHash = HashPassword(registerDto.Password),
                 CreatedAt = DateTime.UtcNow,
                 IsActive = true,
-                Role = "User"
+                Role = registerDto.Role ?? "User"
             };
 
             await _userRepository.CreateAsync(user);
