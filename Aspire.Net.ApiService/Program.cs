@@ -51,8 +51,6 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 
     return ConnectionMultiplexer.Connect(options);
 });
-
-
 builder.Services.AddSingleton<ICacheRepository, RedisCacheRepository>();
 builder.Services.AddSingleton<CacheService>();
 
