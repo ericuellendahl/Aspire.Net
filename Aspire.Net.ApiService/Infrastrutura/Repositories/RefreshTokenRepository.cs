@@ -11,14 +11,14 @@ namespace Aspire.Net.ApiService.Infrastrutura.Repositories
         private readonly ILogger<UserRepository> _logger = logger;
 
 
-        public async Task<bool> InserRefreshTokenAsync(RefreshToken refreshToken, string email)
+        public async Task<bool> InserRefreshTokenAsync(RefreshToken refreshToken, string email, CancellationToken cancellationToken)
         {
             try
             {
                 refreshToken.Email = email;
 
-                await _context.RefreshTokens.AddAsync(refreshToken);
-                return await _context.SaveChangesAsync() > 0;
+                await _context.RefreshTokens.AddAsync(refreshToken, cancellationToken);
+                return await _context.SaveChangesAsync(cancellationToken) > 0;
             }
             catch (Exception ex)
             {
@@ -27,7 +27,7 @@ namespace Aspire.Net.ApiService.Infrastrutura.Repositories
             }
         }
 
-        public async Task<bool> DisableRefrshTokenByEmailAsync(string email)
+        public async Task<bool> DisableRefrshTokenByEmailAsync(string email, CancellationToken cancellationToken)
         {
             try
             {
@@ -37,7 +37,7 @@ namespace Aspire.Net.ApiService.Infrastrutura.Repositories
                 refreshToken.IsActive = false;
 
                 _context.RefreshTokens.Update(refreshToken);
-                return await _context.SaveChangesAsync() > 0;
+                return await _context.SaveChangesAsync(cancellationToken) > 0;
             }
             catch (Exception ex)
             {
@@ -46,7 +46,7 @@ namespace Aspire.Net.ApiService.Infrastrutura.Repositories
             }
         }
 
-        public async Task<bool> DisableRefrshTokenByTokenAsync(string token)
+        public async Task<bool> DisableRefrshTokenByTokenAsync(string token, CancellationToken cancellationToken)
         {
             try
             {
@@ -56,7 +56,7 @@ namespace Aspire.Net.ApiService.Infrastrutura.Repositories
                 refreshToken.IsActive = false;
 
                 _context.RefreshTokens.Update(refreshToken);
-                return await _context.SaveChangesAsync() > 0;
+                return await _context.SaveChangesAsync(cancellationToken) > 0;
             }
             catch (Exception ex)
             {
@@ -65,13 +65,13 @@ namespace Aspire.Net.ApiService.Infrastrutura.Repositories
             }
         }
 
-        public async Task<bool> IsRefreshTokenValidAsync(string token)
+        public async Task<bool> IsRefreshTokenValidAsync(string token, CancellationToken cancellationToken)
         {
             try
             {
                 var refreshToken = await _context.RefreshTokens
                                                  .AsNoTracking()
-                                                 .FirstOrDefaultAsync(e => e.Token == token && e.IsActive && e.Expiration >= DateTime.UtcNow);
+                                                 .FirstOrDefaultAsync(e => e.Token == token && e.IsActive && e.Expiration >= DateTime.UtcNow, cancellationToken);
                 return refreshToken != null;
             }
             catch (Exception ex)

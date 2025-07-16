@@ -23,11 +23,11 @@ public class AuthService : IAuthService
         _refreshTokenRepository = refreshTokenRepository;
     }
 
-    public async Task<LoginResponseDto> LoginAsync(LoginDto loginDto)
+    public async Task<LoginResponseDto> LoginAsync(LoginDto loginDto, CancellationToken cancellationToken)
     {
         try
         {
-            var user = await _userRepository.GetByEmailAsync(loginDto.Email);
+            var user = await _userRepository.GetByEmailAsync(loginDto.Email, cancellationToken);
 
             if (user == null || !user.IsActive)
             {
@@ -44,8 +44,8 @@ public class AuthService : IAuthService
 
             RefreshToken refreshToken = RefreshTokenMapper(refreshTokenDto);
 
-            await _refreshTokenRepository.DisableRefrshTokenByEmailAsync(user.Email);
-            await _refreshTokenRepository.InserRefreshTokenAsync(refreshToken, user.Email);
+            await _refreshTokenRepository.DisableRefrshTokenByEmailAsync(user.Email, cancellationToken);
+            await _refreshTokenRepository.InserRefreshTokenAsync(refreshToken, user.Email, cancellationToken);
 
             _logger.LogInformation("Login bem-sucedido para usuário: {Email}", loginDto.Email);
 
@@ -58,12 +58,12 @@ public class AuthService : IAuthService
         }
     }
 
-    public async Task<AuthResultDto> RegisterAsync(RegisterDto registerDto)
+    public async Task<AuthResultDto> RegisterAsync(RegisterDto registerDto, CancellationToken cancellationToken)
     {
         try
         {
             // Verificar se usuário já existe
-            if (await _userRepository.ExistsAsync(registerDto.Username, registerDto.Email))
+            if (await _userRepository.ExistsAsync(registerDto.Username, registerDto.Email, cancellationToken))
             {
                 return new AuthResultDto
                 {
@@ -83,7 +83,7 @@ public class AuthService : IAuthService
                 Role = registerDto.Role ?? "User"
             };
 
-            await _userRepository.CreateAsync(user);
+            await _userRepository.CreateAsync(user, cancellationToken);
 
             _logger.LogInformation("Usuário registrado com sucesso: {Username}", registerDto.Username);
 
@@ -104,23 +104,23 @@ public class AuthService : IAuthService
         }
     }
 
-    public async Task<bool> ValidateUserAsync(string username, string password)
+    public async Task<bool> ValidateUserAsync(string username, string password, CancellationToken cancellationToken)
     {
-        var user = await _userRepository.GetByUsernameAsync(username);
+        var user = await _userRepository.GetByUsernameAsync(username, cancellationToken);
         return user != null && user.IsActive && VerifyPassword(password, user.PasswordHash);
     }
 
-    public async Task<AuthResultDto> RefreshTokenAsync(string refreshToken)
+    public async Task<AuthResultDto> RefreshTokenAsync(string refreshToken, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(refreshToken))
             return new() { Message = "Refresh token não fornecido", Success = false };
 
 
-        var isValid = await _refreshTokenRepository.IsRefreshTokenValidAsync(refreshToken);
+        var isValid = await _refreshTokenRepository.IsRefreshTokenValidAsync(refreshToken, cancellationToken);
         if (!isValid)
             return new() { Message = "Refresh token inválido", Success = false };
 
-        var currentUser = await _userRepository.FindUserByTokenAsync(refreshToken);
+        var currentUser = await _userRepository.FindUserByTokenAsync(refreshToken, cancellationToken);
         if (currentUser is null)
             return new() { Message = "Not found refresh token", Success = false };
 
@@ -129,15 +129,15 @@ public class AuthService : IAuthService
 
         var refreshTokenMapper = RefreshTokenMapper(generationRefresToken);
 
-        await _refreshTokenRepository.DisableRefrshTokenByEmailAsync(currentUser.Email);
-        await _refreshTokenRepository.InserRefreshTokenAsync(refreshTokenMapper, currentUser.Email);
+        await _refreshTokenRepository.DisableRefrshTokenByEmailAsync(currentUser.Email, cancellationToken);
+        await _refreshTokenRepository.InserRefreshTokenAsync(refreshTokenMapper, currentUser.Email, cancellationToken);
 
         return new AuthResultDto { Token = token, RefreshToken = generationRefresToken.Token, Success = true, Message = "Sucesso" };
 
     }
 
-    public async Task LogoutAsync(string refreshToken)
-        => await _refreshTokenRepository.DisableRefrshTokenByTokenAsync(refreshToken);
+    public async Task LogoutAsync(string refreshToken, CancellationToken cancellationToken)
+        => await _refreshTokenRepository.DisableRefrshTokenByTokenAsync(refreshToken, cancellationToken);
 
     private string GenerateJwtToken(User user)
     {

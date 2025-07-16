@@ -16,13 +16,13 @@ public class UserRepository : IUserRepository
         _logger = logger;
     }
 
-    public async Task<User?> GetByUsernameAsync(string username)
+    public async Task<User?> GetByUsernameAsync(string username, CancellationToken cancellationToken)
     {
         try
         {
             return await _context.Users
                                  .AsNoTracking()
-                                 .FirstOrDefaultAsync(u => u.Username == username);
+                                 .FirstOrDefaultAsync(u => u.Username == username, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -31,13 +31,13 @@ public class UserRepository : IUserRepository
         }
     }
 
-    public async Task<User?> GetByEmailAsync(string email)
+    public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken)
     {
         try
         {
             return await _context.Users
                                  .AsNoTracking()
-                                 .FirstOrDefaultAsync(u => u.Email == email);
+                                 .FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -46,12 +46,12 @@ public class UserRepository : IUserRepository
         }
     }
 
-    public async Task<User> CreateAsync(User user)
+    public async Task<User> CreateAsync(User user, CancellationToken cancellationToken)
     {
         try
         {
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            await _context.Users.AddAsync(user, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
             return user;
         }
         catch (Exception ex)
@@ -61,13 +61,13 @@ public class UserRepository : IUserRepository
         }
     }
 
-    public async Task<bool> ExistsAsync(string username, string email)
+    public async Task<bool> ExistsAsync(string username, string email, CancellationToken cancellationToken)
     {
         try
         {
             return await _context.Users
                                  .AsNoTracking()
-                                 .AnyAsync(u => u.Username == username || u.Email == email);
+                                 .AnyAsync(u => u.Username == username || u.Email == email, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -76,14 +76,14 @@ public class UserRepository : IUserRepository
         }
     }
 
-    public async Task<User?> FindUserByTokenAsync(string token)
+    public async Task<User?> FindUserByTokenAsync(string token, CancellationToken cancellationToken)
     {
         try
         {
             return await _context.Users
                                  .Include(u => u.RefreshTokens)
                                  .AsNoTracking()
-                                 .FirstOrDefaultAsync(u => u.RefreshTokens.Any(rt => rt.Token == token));
+                                 .FirstOrDefaultAsync(u => u.RefreshTokens.Any(rt => rt.Token == token), cancellationToken);
         }
         catch (Exception ex)
         {
