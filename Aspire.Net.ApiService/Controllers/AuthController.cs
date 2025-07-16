@@ -23,7 +23,7 @@ public class AuthController(IAuthService authService, ILogger<AuthController> lo
     {
         try
         {
-            _logger.LogInformation("Tentativa de login para usuário: {Username}", loginDto.Username);
+            _logger.LogInformation("Tentativa de login para usuário: {Email}", loginDto.Email);
 
             var token = await _authService.LoginAsync(loginDto);
 
@@ -69,6 +69,33 @@ public class AuthController(IAuthService authService, ILogger<AuthController> lo
             return StatusCode(500, new { message = "Erro interno do servidor" });
         }
     }
+
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> RefreshToken()
+    {
+        var refreshToken = Request.Cookies["refreshtoken"] ?? string.Empty;
+
+        var result = await _authService.RefreshTokenAsync(refreshToken);
+
+        if (!result.Success)
+            return BadRequest(result.Message);
+
+        return Ok(result);
+    }
+
+    [HttpPost("logout")]
+    [Authorize]
+    public async Task<IActionResult> Logout()
+    {
+        var refreshToken = Request.Cookies["refreshtoken"] ?? string.Empty;
+
+        if (!string.IsNullOrEmpty(refreshToken))
+            await _authService.LogoutAsync(refreshToken);
+
+        return Ok(new { message = "Logout realizado com sucesso" });
+    }
+
 
     /// <summary>
     /// Endpoint protegido para teste

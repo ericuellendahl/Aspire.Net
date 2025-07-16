@@ -33,6 +33,7 @@ builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
 builder.Services.AddTransient<PagamentoProducerMQ>();
 builder.Services.Configure<RabbitMQSettings>(builder.Configuration.GetSection("RabbitMQSettings"));
@@ -62,6 +63,7 @@ builder.Services.AddHealthChecks()
 
 builder.Services.AddHealthChecksUI(options =>
 {
+    options.SetEvaluationTimeInSeconds(10000); 
     options.AddHealthCheckEndpoint("API", "/health");
 }).AddInMemoryStorage();
 

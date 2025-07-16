@@ -8,5 +8,6 @@ namespace Aspire.Net.ApiService.Domain.Interfaces
         Task<User?> GetByEmailAsync(string email);
         Task<User> CreateAsync(User user);
         Task<bool> ExistsAsync(string username, string email);
+        Task<User?> FindUserByTokenAsync(string token);
     }
 }

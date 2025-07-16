@@ -11,43 +11,50 @@ namespace Aspire.Net.ApiService.Application.Services;
 public class AuthService : IAuthService
 {
     private readonly IUserRepository _userRepository;
+    private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IConfiguration _configuration;
     private readonly ILogger<AuthService> _logger;
 
-    public AuthService(IUserRepository userRepository, IConfiguration configuration, ILogger<AuthService> logger)
+    public AuthService(IUserRepository userRepository, IConfiguration configuration, ILogger<AuthService> logger, IRefreshTokenRepository refreshTokenRepository)
     {
         _userRepository = userRepository;
         _configuration = configuration;
         _logger = logger;
+        _refreshTokenRepository = refreshTokenRepository;
     }
 
-    public async Task<string?> LoginAsync(LoginDto loginDto)
+    public async Task<LoginResponseDto> LoginAsync(LoginDto loginDto)
     {
         try
         {
-            var user = await _userRepository.GetByUsernameAsync(loginDto.Username);
+            var user = await _userRepository.GetByEmailAsync(loginDto.Email);
 
             if (user == null || !user.IsActive)
             {
-                _logger.LogWarning("Tentativa de login para usuário inexistente ou inativo: {Username}", loginDto.Username);
-                return null;
+                _logger.LogWarning("Tentativa de login para usuário inexistente ou inativo: {Email}", loginDto.Email);
             }
 
             if (!VerifyPassword(loginDto.Password, user.PasswordHash))
             {
-                _logger.LogWarning("Tentativa de login com senha incorreta para usuário: {Username}", loginDto.Username);
-                return null;
+                _logger.LogWarning("Tentativa de login com senha incorreta para usuário: {Email}", loginDto.Email);
             }
 
             var token = GenerateJwtToken(user);
-            _logger.LogInformation("Login bem-sucedido para usuário: {Username}", loginDto.Username);
+            var refreshTokenDto = GenerateRefrshToken();
 
-            return token;
+            RefreshToken refreshToken = RefreshTokenMapper(refreshTokenDto);
+
+            await _refreshTokenRepository.DisableRefrshTokenByEmailAsync(user.Email);
+            await _refreshTokenRepository.InserRefreshTokenAsync(refreshToken, user.Email);
+
+            _logger.LogInformation("Login bem-sucedido para usuário: {Email}", loginDto.Email);
+
+            return new LoginResponseDto { AccessToken = token, RefreshToken = refreshTokenDto.Token };
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro durante o processo de login");
-            return null;
+            throw;
         }
     }
 
@@ -103,7 +110,36 @@ public class AuthService : IAuthService
         return user != null && user.IsActive && VerifyPassword(password, user.PasswordHash);
     }
 
-    public string GenerateJwtToken(User user)
+    public async Task<AuthResultDto> RefreshTokenAsync(string refreshToken)
+    {
+        if (string.IsNullOrEmpty(refreshToken))
+            return new() { Message = "Refresh token não fornecido", Success = false };
+
+
+        var isValid = await _refreshTokenRepository.IsRefreshTokenValidAsync(refreshToken);
+        if (!isValid)
+            return new() { Message = "Refresh token inválido", Success = false };
+
+        var currentUser = await _userRepository.FindUserByTokenAsync(refreshToken);
+        if (currentUser is null)
+            return new() { Message = "Not found refresh token", Success = false };
+
+        var token = GenerateJwtToken(currentUser);
+        var generationRefresToken = GenerateRefrshToken();
+
+        var refreshTokenMapper = RefreshTokenMapper(generationRefresToken);
+
+        await _refreshTokenRepository.DisableRefrshTokenByEmailAsync(currentUser.Email);
+        await _refreshTokenRepository.InserRefreshTokenAsync(refreshTokenMapper, currentUser.Email);
+
+        return new AuthResultDto { Token = token, RefreshToken = generationRefresToken.Token, Success = true, Message = "Sucesso" };
+
+    }
+
+    public async Task LogoutAsync(string refreshToken)
+        => await _refreshTokenRepository.DisableRefrshTokenByTokenAsync(refreshToken);
+
+    private string GenerateJwtToken(User user)
     {
         var jwtSettings = _configuration.GetSection("JwtSettings");
         var secretKey = jwtSettings["SecretKey"];
@@ -135,6 +171,17 @@ public class AuthService : IAuthService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
+    private static RefreshTokenDto GenerateRefrshToken()
+    {
+        return new RefreshTokenDto
+        {
+            Token = Guid.NewGuid().ToString(),
+            Expiration = DateTime.UtcNow.AddMonths(1),
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        };
+    }
+
     private static string HashPassword(string password)
     {
         return BCrypt.Net.BCrypt.HashPassword(password);
@@ -143,5 +190,16 @@ public class AuthService : IAuthService
     private static bool VerifyPassword(string password, string hashedPassword)
     {
         return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
+    }
+
+    private static RefreshToken RefreshTokenMapper(RefreshTokenDto refreshTokenDto)
+    {
+        return new RefreshToken
+        {
+            Token = refreshTokenDto.Token,
+            Expiration = refreshTokenDto.Expiration,
+            IsActive = refreshTokenDto.IsActive,
+            CreatedAt = refreshTokenDto.CreatedAt
+        };
     }
 }

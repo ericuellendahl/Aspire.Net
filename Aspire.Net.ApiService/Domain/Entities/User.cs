@@ -25,5 +25,7 @@ namespace Aspire.Net.ApiService.Domain.Entities
 
         [MaxLength(50)]
         public string Role { get; set; } = "User";
+
+        public virtual ICollection<RefreshToken>? RefreshTokens { get; set; }
     }
 }

@@ -21,7 +21,8 @@ public class UserRepository : IUserRepository
         try
         {
             return await _context.Users
-                .FirstOrDefaultAsync(u => u.Username == username);
+                                 .AsNoTracking()
+                                 .FirstOrDefaultAsync(u => u.Username == username);
         }
         catch (Exception ex)
         {
@@ -35,7 +36,8 @@ public class UserRepository : IUserRepository
         try
         {
             return await _context.Users
-                .FirstOrDefaultAsync(u => u.Email == email);
+                                 .AsNoTracking()
+                                 .FirstOrDefaultAsync(u => u.Email == email);
         }
         catch (Exception ex)
         {
@@ -64,12 +66,29 @@ public class UserRepository : IUserRepository
         try
         {
             return await _context.Users
-                .AnyAsync(u => u.Username == username || u.Email == email);
+                                 .AsNoTracking()
+                                 .AnyAsync(u => u.Username == username || u.Email == email);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro ao verificar se usuário existe: {Username}, {Email}", username, email);
             return false;
+        }
+    }
+
+    public async Task<User?> FindUserByTokenAsync(string token)
+    {
+        try
+        {
+            return await _context.Users
+                                 .Include(u => u.RefreshTokens)
+                                 .AsNoTracking()
+                                 .FirstOrDefaultAsync(u => u.RefreshTokens.Any(rt => rt.Token == token));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao buscar usuário por token: {Token}", token);
+            return null;
         }
     }
 }

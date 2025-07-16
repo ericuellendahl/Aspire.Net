@@ -32,4 +32,8 @@
 		<ProjectReference Include="..\Aspire.Net.ServiceDefaults\Aspire.Net.ServiceDefaults.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Infrastrutura\Providers\" />
+	</ItemGroup>
+
 </Project>
