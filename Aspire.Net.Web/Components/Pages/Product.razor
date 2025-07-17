@@ -3,7 +3,10 @@
 @attribute [StreamRendering(true)]
 @attribute [Authorize(Roles = "User")]
 
+@rendermode InteractiveServer
 @inject ProductApiClientService ProductApi
+@inject IJSRuntime JSRuntime
+
 
 <PageTitle>Lista de Produtos</PageTitle>
 
@@ -51,12 +54,53 @@ else
         </tbody>
     </table>
 }
-
+@if (!hasMore)
+{
+    <p><em>Todos os produtos foram carregados.</em></p>
+}
 @code {
-    private ProductResponse[]? products;
+    private readonly List<ProductResponse> products = new();
+    private int page = 1;
+    private const int pageSize = 20;
+    private bool isLoading = false;
+    private bool hasMore = true;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        products = await ProductApi.GetProductsAsync();
+        if (firstRender)
+        {
+            await LoadMoreProducts();
+            await JSRuntime.InvokeVoidAsync("initializeScrollHandler", DotNetObjectReference.Create(this));
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnScrollReachedBottom()
+    {
+        if (!isLoading && hasMore)
+        {
+            await LoadMoreProducts();
+        }
+    }
+
+    private async Task LoadMoreProducts()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        var newProducts = await ProductApi.GetProductsPagedAsync(page, pageSize);
+
+        if (newProducts?.Count > 0)
+        {
+            products.AddRange(newProducts);
+            page++;
+        }
+        else
+        {
+            hasMore = false;
+        }
+
+        isLoading = false;
+        StateHasChanged();
     }
 }

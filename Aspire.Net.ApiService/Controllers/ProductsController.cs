@@ -17,13 +17,13 @@ public class ProductsController(IProductService productService, ILogger<Products
     /// <returns>Lista de produtos</returns>
     [HttpGet]
     [Authorize]
-    public async Task<IActionResult> GetAllProducts()
+    public async Task<IActionResult> GetAllProducts([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
         try
         {
-            _logger.LogInformation("Iniciando a busca por todos os produtos ativos.");
+            _logger.LogInformation("Buscando produtos ativos paginados. Página {Page}, Tamanho {PageSize}", page, pageSize);
 
-            var products = await _productService.GetAllProductsAsync();
+            var products = await _productService.GetAllProductsAsync(page, pageSize);
 
             return Ok(products);
         }

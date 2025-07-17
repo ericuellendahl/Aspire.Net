@@ -7,25 +7,15 @@ namespace Aspire.Net.Web.ApiEndPoints
     {
         private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
-        public async Task<ProductResponse[]> GetProductsAsync(int maxItems = 10, CancellationToken cancellationToken = default)
+        public async Task<List<ProductResponse>> GetProductsPagedAsync(int page, int pageSize, CancellationToken cancellationToken = default)
         {
             var token = _httpContextAccessor.HttpContext?.Request.Cookies["access_token"];
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            List<ProductResponse>? products = null;
-            await foreach (var product in httpClient.GetFromJsonAsAsyncEnumerable<ProductResponse>("products/api/Products", cancellationToken))
-            {
-                if (products?.Count >= maxItems)
-                {
-                    break;
-                }
-                if (product is not null)
-                {
-                    products ??= [];
-                    products.Add(product);
-                }
-            }
-            return products?.ToArray() ?? [];
+            var url = $"products/api/Products?page={page}&pageSize={pageSize}";
+            var products = await httpClient.GetFromJsonAsync<List<ProductResponse>>(url, cancellationToken);
+
+            return products ?? [];
         }
     }
 }

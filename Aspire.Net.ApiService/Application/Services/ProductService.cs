@@ -15,23 +15,25 @@ namespace Aspire.Net.ApiService.Application.Services
 
         const string keyProducts = "products";
 
-        public async Task<IEnumerable<ProductDto>?> GetAllProductsAsync()
+        public async Task<IEnumerable<ProductDto>?> GetAllProductsAsync(int page, int pageSize)
         {
             _logger.LogInformation("Fetching all active products from the database.");
 
-            var cachedProducts = await _cacheService.GetAsync<IEnumerable<ProductDto>>(keyProducts);
-            if (cachedProducts != null)
-            {
-                return cachedProducts;
-            }
+            //var cachedProducts = await _cacheService.GetAsync<IEnumerable<ProductDto>>(keyProducts);
+            //if (cachedProducts != null)
+            //{
+            //    return cachedProducts;
+            //}
 
             var products = await _context.Products
                                         .AsNoTracking()
                                         .Where(p => p.IsActive)
-                                        .OrderBy(p => p.Name)
+                                        .OrderBy(p => p.Id)
+                                        .Skip((page - 1) * pageSize)
+                                        .Take(pageSize)
                                         .ToListAsync();
 
-            await _cacheService.SetAsync(keyProducts, products.Select(MapToDto), TimeSpan.FromMinutes(10));
+            //await _cacheService.SetAsync(keyProducts, products.Select(MapToDto), TimeSpan.FromMinutes(10));
 
             return products.Select(MapToDto);
         }
