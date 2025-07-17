@@ -1,6 +1,4 @@
 ﻿using Aspire.Net.Web.DTOs.Responses;
-using Aspire.Net.Web.Services;
-using Microsoft.AspNetCore.Components;
 using System.Net.Http.Headers;
 
 namespace Aspire.Net.Web.ApiEndPoints

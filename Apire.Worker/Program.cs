@@ -34,9 +34,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Registrar serviços
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IPaymentProcessingService, PaymentProcessingService>();
+builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
 
 // Registrar o Worker
 builder.Services.AddHostedService<PaymentWorkerService>();
+builder.Services.AddHostedService<RefreshTokenWorkerService>();
 
 // Adicionar logging
 builder.Services.AddLogging(logging =>

@@ -1,29 +1,20 @@
 ﻿using Aspire.Net.Web.DTOs.Auth;
 using Aspire.Net.Web.Services;
 using Microsoft.AspNetCore.Components;
-using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Text.Json;
 
 namespace Aspire.Net.Web.ApiEndPoints
 {
-    public class AuthApiClientService
+    public class AuthApiClientService(AccessTokenService accessTokenService,
+                                NavigationManager navigationManager,
+                                IHttpClientFactory httpClientFactory,
+                                RefreshTokenService refreshTokenService)
     {
-        private readonly AccessTokenService _accessTokenService;
-        private readonly RefreshTokenService _refreshTokenService;
-        private readonly NavigationManager _navigationManager;
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly HttpClient _httpClient;
-
-        public AuthApiClientService(AccessTokenService accessTokenService, NavigationManager navigationManager, IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor, RefreshTokenService refreshTokenService)
-        {
-            _accessTokenService = accessTokenService;
-            _navigationManager = navigationManager;
-            _httpContextAccessor = httpContextAccessor;
-            _httpClient = httpClientFactory.CreateClient("ApiClient");
-            _refreshTokenService = refreshTokenService;
-        }
+        private readonly AccessTokenService _accessTokenService = accessTokenService;
+        private readonly RefreshTokenService _refreshTokenService = refreshTokenService;
+        private readonly NavigationManager _navigationManager = navigationManager;
+        private readonly HttpClient _httpClient = httpClientFactory.CreateClient("ApiClient");
 
         public async Task<bool> LoginAsync(string email, string password)
         {
@@ -66,26 +57,17 @@ namespace Aspire.Net.Web.ApiEndPoints
 
         public async Task Logout()
         {
-            var accessToken = _httpContextAccessor.HttpContext?.Request.Cookies["access_token"];
+            var accessToken = await _accessTokenService.GetToken();
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
             var refreshToken = await _refreshTokenService.Get();
             _httpClient.DefaultRequestHeaders.Add("Cookie", $"refreshtoken={refreshToken}");
 
-            try
-            {
-                var response = await _httpClient.PostAsync("Auth/logout", null);
-                if (response.IsSuccessStatusCode)
-                {
-                    await _accessTokenService.DeleteToken();
-                    await _refreshTokenService.Delete();
-                    _navigationManager.NavigateTo("/login", forceLoad: true);
-                }
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
+            await _httpClient.PostAsync("Auth/logout", null);
+            await _accessTokenService.DeleteToken();
+            await _refreshTokenService.Delete();
+
+            _navigationManager.NavigateTo("/login", forceLoad: true);
         }
     }
 }
