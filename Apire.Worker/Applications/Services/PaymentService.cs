@@ -1,7 +1,6 @@
 ﻿using Apire.Worker.Domain.Entities;
 using Apire.Worker.Domain.Interfaces;
 using Apire.Worker.Infraestrutura.Contexts;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Apire.Worker.Applications.Services
