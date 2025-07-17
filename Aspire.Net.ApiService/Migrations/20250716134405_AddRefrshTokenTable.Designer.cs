@@ -3,6 +3,7 @@ using System;
 using Aspire.Net.ApiService.Infrastrutura.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Aspire.Net.ApiService.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250716134405_AddRefrshTokenTable")]
+    partial class AddRefrshTokenTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -164,6 +167,7 @@ namespace Aspire.Net.ApiService.Migrations
                         .HasName("pk_refresh_tokens");
 
                     b.HasIndex("Email")
+                        .IsUnique()
                         .HasDatabaseName("ix_refresh_tokens_email");
 
                     b.ToTable("RefreshTokens", (string)null);
@@ -237,9 +241,9 @@ namespace Aspire.Net.ApiService.Migrations
             modelBuilder.Entity("Aspire.Net.ApiService.Domain.Entities.RefreshToken", b =>
                 {
                     b.HasOne("Aspire.Net.ApiService.Domain.Entities.User", "User")
-                        .WithMany("RefreshTokens")
-                        .HasForeignKey("Email")
-                        .HasPrincipalKey("Email")
+                        .WithOne("RefreshTokens")
+                        .HasForeignKey("Aspire.Net.ApiService.Domain.Entities.RefreshToken", "Email")
+                        .HasPrincipalKey("Aspire.Net.ApiService.Domain.Entities.User", "Email")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_refresh_tokens_users_email");

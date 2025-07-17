@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Aspire.Net.ApiService.Domain.DTOs;
 using Aspire.Net.ApiService.Domain.Interfaces;
-using Aspire.Net.ApiService.Domain.DTOs;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Aspire.Net.ApiService.Controllers;
 
@@ -19,13 +19,13 @@ public class AuthController(IAuthService authService, ILogger<AuthController> lo
     /// <returns>Token JWT</returns>
     [HttpPost("login")]
     [AllowAnonymous]
-    public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
+    public async Task<IActionResult> Login([FromBody] LoginDto loginDto, CancellationToken cancellationToken)
     {
         try
         {
-            _logger.LogInformation("Tentativa de login para usuário: {Username}", loginDto.Username);
+            _logger.LogInformation("Tentativa de login para usuário: {Email}", loginDto.Email);
 
-            var token = await _authService.LoginAsync(loginDto);
+            var token = await _authService.LoginAsync(loginDto, cancellationToken);
 
             if (token == null)
             {
@@ -48,13 +48,13 @@ public class AuthController(IAuthService authService, ILogger<AuthController> lo
     /// <returns>Confirmação de registro</returns>
     [HttpPost("register")]
     [AllowAnonymous]
-    public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
+    public async Task<IActionResult> Register([FromBody] RegisterDto registerDto, CancellationToken cancellationToken)
     {
         try
         {
             _logger.LogInformation("Tentativa de registro para usuário: {Username}", registerDto.Username);
 
-            var result = await _authService.RegisterAsync(registerDto);
+            var result = await _authService.RegisterAsync(registerDto, cancellationToken);
 
             if (!result.Success)
             {
@@ -69,6 +69,33 @@ public class AuthController(IAuthService authService, ILogger<AuthController> lo
             return StatusCode(500, new { message = "Erro interno do servidor" });
         }
     }
+
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> RefreshToken(CancellationToken cancellationToken)
+    {
+        var refreshToken = Request.Cookies["refreshtoken"] ?? string.Empty;
+
+        var result = await _authService.RefreshTokenAsync(refreshToken, cancellationToken);
+
+        if (!result.Success)
+            return BadRequest(result.Message);
+
+        return Ok(result);
+    }
+
+    [HttpPost("logout")]
+    [Authorize]
+    public async Task<IActionResult> Logout(CancellationToken cancellationToken)
+    {
+        var refreshToken = Request.Cookies["refreshtoken"] ?? string.Empty;
+
+        if (!string.IsNullOrEmpty(refreshToken))
+            await _authService.LogoutAsync(refreshToken, cancellationToken);
+
+        return Ok(new { message = "Logout realizado com sucesso" });
+    }
+
 
     /// <summary>
     /// Endpoint protegido para teste

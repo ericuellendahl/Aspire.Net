@@ -16,12 +16,13 @@ public class UserRepository : IUserRepository
         _logger = logger;
     }
 
-    public async Task<User?> GetByUsernameAsync(string username)
+    public async Task<User?> GetByUsernameAsync(string username, CancellationToken cancellationToken)
     {
         try
         {
             return await _context.Users
-                .FirstOrDefaultAsync(u => u.Username == username);
+                                 .AsNoTracking()
+                                 .FirstOrDefaultAsync(u => u.Username == username, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -30,12 +31,13 @@ public class UserRepository : IUserRepository
         }
     }
 
-    public async Task<User?> GetByEmailAsync(string email)
+    public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken)
     {
         try
         {
             return await _context.Users
-                .FirstOrDefaultAsync(u => u.Email == email);
+                                 .AsNoTracking()
+                                 .FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -44,12 +46,12 @@ public class UserRepository : IUserRepository
         }
     }
 
-    public async Task<User> CreateAsync(User user)
+    public async Task<User> CreateAsync(User user, CancellationToken cancellationToken)
     {
         try
         {
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            await _context.Users.AddAsync(user, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
             return user;
         }
         catch (Exception ex)
@@ -59,17 +61,34 @@ public class UserRepository : IUserRepository
         }
     }
 
-    public async Task<bool> ExistsAsync(string username, string email)
+    public async Task<bool> ExistsAsync(string username, string email, CancellationToken cancellationToken)
     {
         try
         {
             return await _context.Users
-                .AnyAsync(u => u.Username == username || u.Email == email);
+                                 .AsNoTracking()
+                                 .AnyAsync(u => u.Username == username || u.Email == email, cancellationToken);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro ao verificar se usuário existe: {Username}, {Email}", username, email);
             return false;
+        }
+    }
+
+    public async Task<User?> FindUserByTokenAsync(string token, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await _context.Users
+                                 .Include(u => u.RefreshTokens)
+                                 .AsNoTracking()
+                                 .FirstOrDefaultAsync(u => u.RefreshTokens.Any(rt => rt.Token == token), cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao buscar usuário por token: {Token}", token);
+            return null;
         }
     }
 }

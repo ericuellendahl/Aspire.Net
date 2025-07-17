@@ -33,6 +33,7 @@ builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
 builder.Services.AddTransient<PagamentoProducerMQ>();
 builder.Services.Configure<RabbitMQSettings>(builder.Configuration.GetSection("RabbitMQSettings"));
@@ -51,20 +52,18 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 
     return ConnectionMultiplexer.Connect(options);
 });
-
-
 builder.Services.AddSingleton<ICacheRepository, RedisCacheRepository>();
 builder.Services.AddSingleton<CacheService>();
 
-string? connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+string? connectionString = builder.Configuration.GetConnectionString("PostgreConnection");
 
 builder.Services.AddHealthChecks()
-    .AddRedis(redisSettings.ConnectionString, name: "redis")
+    .AddRedis($"{redisSettings.Host}:{redisSettings.Port},password={redisSettings.Password},abortConnect=false", name: "redis")
     .AddNpgSql(connectionString, name: "postgresql", failureStatus: HealthStatus.Unhealthy, tags: ["db", "sql", "postgres"]);
 
 builder.Services.AddHealthChecksUI(options =>
 {
-    options.SetEvaluationTimeInSeconds(10);
+    options.SetEvaluationTimeInSeconds(10000); 
     options.AddHealthCheckEndpoint("API", "/health");
 }).AddInMemoryStorage();
 

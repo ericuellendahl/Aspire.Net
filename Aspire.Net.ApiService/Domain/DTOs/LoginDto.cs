@@ -4,10 +4,10 @@ namespace Aspire.Net.ApiService.Domain.DTOs
 {
     public class LoginDto
     {
-        [Required(ErrorMessage = "Username é obrigatório")]
-        public string Username { get; set; } = string.Empty;
+        [Required(ErrorMessage = "{0} é obrigatório")]
+        public string Email { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Password é obrigatório")]
+        [Required(ErrorMessage = "{0} é obrigatório")]
         public string Password { get; set; } = string.Empty;
     }
 }

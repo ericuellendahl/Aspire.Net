@@ -4,7 +4,6 @@ using Aspire.Net.ApiService.Domain.Interfaces;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace Aspire.Net.ApiService.Application.Services;
@@ -12,52 +11,59 @@ namespace Aspire.Net.ApiService.Application.Services;
 public class AuthService : IAuthService
 {
     private readonly IUserRepository _userRepository;
+    private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IConfiguration _configuration;
     private readonly ILogger<AuthService> _logger;
 
-    public AuthService(IUserRepository userRepository, IConfiguration configuration, ILogger<AuthService> logger)
+    public AuthService(IUserRepository userRepository, IConfiguration configuration, ILogger<AuthService> logger, IRefreshTokenRepository refreshTokenRepository)
     {
         _userRepository = userRepository;
         _configuration = configuration;
         _logger = logger;
+        _refreshTokenRepository = refreshTokenRepository;
     }
 
-    public async Task<string?> LoginAsync(LoginDto loginDto)
+    public async Task<LoginResponseDto> LoginAsync(LoginDto loginDto, CancellationToken cancellationToken)
     {
         try
         {
-            var user = await _userRepository.GetByUsernameAsync(loginDto.Username);
+            var user = await _userRepository.GetByEmailAsync(loginDto.Email, cancellationToken);
 
             if (user == null || !user.IsActive)
             {
-                _logger.LogWarning("Tentativa de login para usuário inexistente ou inativo: {Username}", loginDto.Username);
-                return null;
+                _logger.LogWarning("Tentativa de login para usuário inexistente ou inativo: {Email}", loginDto.Email);
             }
 
             if (!VerifyPassword(loginDto.Password, user.PasswordHash))
             {
-                _logger.LogWarning("Tentativa de login com senha incorreta para usuário: {Username}", loginDto.Username);
-                return null;
+                _logger.LogWarning("Tentativa de login com senha incorreta para usuário: {Email}", loginDto.Email);
             }
 
             var token = GenerateJwtToken(user);
-            _logger.LogInformation("Login bem-sucedido para usuário: {Username}", loginDto.Username);
+            var refreshTokenDto = GenerateRefrshToken();
 
-            return token;
+            RefreshToken refreshToken = RefreshTokenMapper(refreshTokenDto);
+
+            await _refreshTokenRepository.DisableRefrshTokenByEmailAsync(user.Email, cancellationToken);
+            await _refreshTokenRepository.InserRefreshTokenAsync(refreshToken, user.Email, cancellationToken);
+
+            _logger.LogInformation("Login bem-sucedido para usuário: {Email}", loginDto.Email);
+
+            return new LoginResponseDto { AccessToken = token, RefreshToken = refreshTokenDto.Token };
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro durante o processo de login");
-            return null;
+            throw;
         }
     }
 
-    public async Task<AuthResultDto> RegisterAsync(RegisterDto registerDto)
+    public async Task<AuthResultDto> RegisterAsync(RegisterDto registerDto, CancellationToken cancellationToken)
     {
         try
         {
             // Verificar se usuário já existe
-            if (await _userRepository.ExistsAsync(registerDto.Username, registerDto.Email))
+            if (await _userRepository.ExistsAsync(registerDto.Username, registerDto.Email, cancellationToken))
             {
                 return new AuthResultDto
                 {
@@ -74,10 +80,10 @@ public class AuthService : IAuthService
                 PasswordHash = HashPassword(registerDto.Password),
                 CreatedAt = DateTime.UtcNow,
                 IsActive = true,
-                Role = "User"
+                Role = registerDto.Role ?? "User"
             };
 
-            await _userRepository.CreateAsync(user);
+            await _userRepository.CreateAsync(user, cancellationToken);
 
             _logger.LogInformation("Usuário registrado com sucesso: {Username}", registerDto.Username);
 
@@ -98,13 +104,42 @@ public class AuthService : IAuthService
         }
     }
 
-    public async Task<bool> ValidateUserAsync(string username, string password)
+    public async Task<bool> ValidateUserAsync(string username, string password, CancellationToken cancellationToken)
     {
-        var user = await _userRepository.GetByUsernameAsync(username);
+        var user = await _userRepository.GetByUsernameAsync(username, cancellationToken);
         return user != null && user.IsActive && VerifyPassword(password, user.PasswordHash);
     }
 
-    public string GenerateJwtToken(User user)
+    public async Task<AuthResultDto> RefreshTokenAsync(string refreshToken, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(refreshToken))
+            return new() { Message = "Refresh token não fornecido", Success = false };
+
+
+        var isValid = await _refreshTokenRepository.IsRefreshTokenValidAsync(refreshToken, cancellationToken);
+        if (!isValid)
+            return new() { Message = "Refresh token inválido", Success = false };
+
+        var currentUser = await _userRepository.FindUserByTokenAsync(refreshToken, cancellationToken);
+        if (currentUser is null)
+            return new() { Message = "Not found refresh token", Success = false };
+
+        var token = GenerateJwtToken(currentUser);
+        var generationRefresToken = GenerateRefrshToken();
+
+        var refreshTokenMapper = RefreshTokenMapper(generationRefresToken);
+
+        await _refreshTokenRepository.DisableRefrshTokenByEmailAsync(currentUser.Email, cancellationToken);
+        await _refreshTokenRepository.InserRefreshTokenAsync(refreshTokenMapper, currentUser.Email, cancellationToken);
+
+        return new AuthResultDto { Token = token, RefreshToken = generationRefresToken.Token, Success = true, Message = "Sucesso" };
+
+    }
+
+    public async Task LogoutAsync(string refreshToken, CancellationToken cancellationToken)
+        => await _refreshTokenRepository.DisableRefrshTokenByTokenAsync(refreshToken, cancellationToken);
+
+    private string GenerateJwtToken(User user)
     {
         var jwtSettings = _configuration.GetSection("JwtSettings");
         var secretKey = jwtSettings["SecretKey"];
@@ -136,37 +171,35 @@ public class AuthService : IAuthService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
+    private static RefreshTokenDto GenerateRefrshToken()
+    {
+        return new RefreshTokenDto
+        {
+            Token = Guid.NewGuid().ToString(),
+            Expiration = DateTime.UtcNow.AddMonths(1),
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        };
+    }
+
     private static string HashPassword(string password)
     {
-        using var rng = RandomNumberGenerator.Create();
-        var salt = new byte[16];
-        rng.GetBytes(salt);
-
-        using var pbkdf2 = new Rfc2898DeriveBytes(password, salt, 10000, HashAlgorithmName.SHA256);
-        var hash = pbkdf2.GetBytes(32);
-
-        var hashBytes = new byte[48];
-        Array.Copy(salt, 0, hashBytes, 0, 16);
-        Array.Copy(hash, 0, hashBytes, 16, 32);
-
-        return Convert.ToBase64String(hashBytes);
+        return BCrypt.Net.BCrypt.HashPassword(password);
     }
 
     private static bool VerifyPassword(string password, string hashedPassword)
     {
-        var hashBytes = Convert.FromBase64String(hashedPassword);
-        var salt = new byte[16];
-        Array.Copy(hashBytes, 0, salt, 0, 16);
+        return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
+    }
 
-        using var pbkdf2 = new Rfc2898DeriveBytes(password, salt, 10000, HashAlgorithmName.SHA256);
-        var hash = pbkdf2.GetBytes(32);
-
-        for (int i = 0; i < 32; i++)
+    private static RefreshToken RefreshTokenMapper(RefreshTokenDto refreshTokenDto)
+    {
+        return new RefreshToken
         {
-            if (hashBytes[i + 16] != hash[i])
-                return false;
-        }
-
-        return true;
+            Token = refreshTokenDto.Token,
+            Expiration = refreshTokenDto.Expiration,
+            IsActive = refreshTokenDto.IsActive,
+            CreatedAt = refreshTokenDto.CreatedAt
+        };
     }
 }

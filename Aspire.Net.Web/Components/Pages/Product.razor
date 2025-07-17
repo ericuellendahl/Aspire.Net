@@ -1,8 +1,9 @@
 ﻿@page "/product"
-@attribute [StreamRendering(true)]
-@attribute [OutputCache(Duration = 5)]
 
-@inject ProductApiClient ProductApi
+@attribute [StreamRendering(true)]
+@attribute [Authorize(Roles = "User")]
+
+@inject ProductApiClientService ProductApi
 
 <PageTitle>Lista de Produtos</PageTitle>
 
