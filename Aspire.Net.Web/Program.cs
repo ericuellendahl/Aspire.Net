@@ -1,5 +1,8 @@
-using Aspire.Net.Web.ApiClienties;
+using Aspire.Net.Web.ApiEndPoints;
 using Aspire.Net.Web.Components;
+using Aspire.Net.Web.Security;
+using Aspire.Net.Web.Services;
+using Microsoft.AspNetCore.Components.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,15 +13,33 @@ builder.AddServiceDefaults();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddScoped<CookieService>();
+builder.Services.AddScoped<AccessTokenService>();
+builder.Services.AddScoped<RefreshTokenService>();
+builder.Services.AddScoped<AuthApiClientService>();
+
 builder.Services.AddOutputCache();
 
-builder.Services.AddHttpClient<ProductApiClient>(client =>
+builder.Services.AddHttpClient("ApiClient", client =>
     {
-        // This URL uses "https+http://" to indicate HTTPS is preferred over HTTP.
-        // Learn more about service discovery scheme resolution at https://aka.ms/dotnet/sdschemes.
+        client.BaseAddress = new Uri("http://localhost:5000/");
+    });
+
+builder.Services.AddHttpClient<ProductApiClientService>(client =>
+    {
         //client.BaseAddress = new("https+http://apiservice");
         client.BaseAddress = new("http://localhost:5000/");
     });
+
+builder.Services.AddAuthorization();
+builder.Services.AddAuthentication().AddScheme<CustomOption, JWTAuthenticationHandler>(
+    "JWTAuth", options => { }
+    );
+builder.Services.AddScoped<JWTAuthenticationStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider, JWTAuthenticationStateProvider>();
+builder.Services.AddCascadingAuthenticationState();
 
 var app = builder.Build();
 

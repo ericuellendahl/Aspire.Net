@@ -31,12 +31,15 @@ namespace Aspire.Net.ApiService.Infrastrutura.Repositories
         {
             try
             {
-                var refreshToken = await _context.RefreshTokens.FirstOrDefaultAsync(e => e.Email == email);
-                if (refreshToken == null) return false;
+                var refreshToken = await _context.RefreshTokens
+                                                 .Where(e => e.Email == email && e.IsActive)
+                                                 .ToListAsync(cancellationToken);
 
-                refreshToken.IsActive = false;
+                if (!refreshToken.Any()) return false;
 
-                _context.RefreshTokens.Update(refreshToken);
+                refreshToken.ForEach(rt => rt.IsActive = false);
+                _context.RefreshTokens.UpdateRange(refreshToken);
+
                 return await _context.SaveChangesAsync(cancellationToken) > 0;
             }
             catch (Exception ex)
