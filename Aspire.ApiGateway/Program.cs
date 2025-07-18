@@ -9,12 +9,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Add service defaults & Aspire components.
 builder.AddServiceDefaults();
 
-builder.Configuration.Sources.Clear();
-builder.Configuration
-    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
-    .AddEnvironmentVariables()
-    .AddCommandLine(args);
+//builder.Configuration.Sources.Clear();
+//builder.Configuration
+//    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+//    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+//    .AddEnvironmentVariables()
+//    .AddCommandLine(args);
 
 //var reverseProxySection = builder.Configuration.GetSection("ReverseProxy");
 
