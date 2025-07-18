@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using Aspire.ApiGateway;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -15,11 +16,12 @@ builder.Configuration
     .AddEnvironmentVariables()
     .AddCommandLine(args);
 
-var reverseProxySection = builder.Configuration.GetSection("ReverseProxy");
+//var reverseProxySection = builder.Configuration.GetSection("ReverseProxy");
 
 // Carrega as configurações do YARP
 builder.Services.AddReverseProxy()
-    .LoadFromConfig(reverseProxySection);
+                //.LoadFromConfig(reverseProxySection)   
+                .LoadFromMemory(BaseConfiguration.GetRoutes(), BaseConfiguration.GetClusters());
 
 var app = builder.Build();
 
