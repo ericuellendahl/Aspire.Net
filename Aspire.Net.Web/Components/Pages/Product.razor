@@ -1,7 +1,7 @@
 ﻿@page "/product"
 
 @attribute [StreamRendering(true)]
-@attribute [Authorize(Roles = "User")]
+
 
 @rendermode InteractiveServer
 @inject ProductApiClientService ProductApi
@@ -14,50 +14,52 @@
 
 <p>Lista de todos os produtos.</p>
 
-@if (products == null)
+@if (products.Count == 0 && isLoading)
 {
-    <p><em>Loading...</em></p>
+    <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Price</th>
-                <th>Stock</th>
-                <th>Is Active</th>
-                <th>Category</th>
-                <th>Sku</th>
-                <th>Created At</th>
-                <th>Updated At</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var product in products)
-            {
-                <tr>
-                    <td>@product.Id</td>
-                    <td>@product.Name</td>
-                    <td>@product.Description</td>
-                    <td>@product.Price.ToString("C")</td>
-                    <td>@product.Stock</td>
-                    <td>@(product.IsActive ? "Yes" : "No")</td>
-                    <td>@product.Category</td>
-                    <td>@product.Sku</td>
-                    <td>@product.CreatedAt.ToString("g")</td>
-                    <td>@product.UpdatedAt?.ToString("g")</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <AuthorizeView Roles="@RolesAuth.Admin.ToString()">
+        <Authorized>
+            <MudTable Items="products" Hover="true" Bordered="true" Striped="true">
+                <HeaderContent>
+                    <MudTh>Id</MudTh>
+                    <MudTh>Name</MudTh>
+                    <MudTh>Description</MudTh>
+                    <MudTh>Price</MudTh>
+                    <MudTh>Stock</MudTh>
+                    <MudTh>Is Active</MudTh>
+                    <MudTh>Category</MudTh>
+                    <MudTh>Sku</MudTh>
+                    <MudTh>Created At</MudTh>
+                    <MudTh>Updated At</MudTh>
+                </HeaderContent>
+                <RowTemplate Context="product">
+                    <MudTd DataLabel="Id">@product.Id</MudTd>
+                    <MudTd DataLabel="Name">@product.Name</MudTd>
+                    <MudTd DataLabel="Description">@product.Description</MudTd>
+                    <MudTd DataLabel="Price">@product.Price.ToString("C")</MudTd>
+                    <MudTd DataLabel="Stock">@product.Stock</MudTd>
+                    <MudTd DataLabel="Is Active">@(product.IsActive ? "Yes" : "No")</MudTd>
+                    <MudTd DataLabel="Category">@product.Category</MudTd>
+                    <MudTd DataLabel="Sku">@product.Sku</MudTd>
+                    <MudTd DataLabel="Created At">@product.CreatedAt.ToString("g")</MudTd>
+                    <MudTd DataLabel="Updated At">@product.UpdatedAt?.ToString("g")</MudTd>
+                </RowTemplate>
+            </MudTable>
+        </Authorized>
+        <NotAuthorized>
+            <MudText Color="Color.Error">Você não tem permissão para acessar esta página.</MudText>
+        </NotAuthorized>
+    </AuthorizeView>
+
 }
 @if (!hasMore)
 {
-    <p><em>Todos os produtos foram carregados.</em></p>
+    <MudText Typo="Typo.body1" Color="Color.Secondary">Todos os produtos foram carregados.</MudText>
 }
+
 @code {
     private readonly List<ProductResponse> products = new();
     private int page = 1;

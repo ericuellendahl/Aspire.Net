@@ -8,95 +8,77 @@
 
 <PageTitle>Home</PageTitle>
 
-<style>
-	table {
-		width: 100%;
-		max-width: 100%; /* Ensure it doesn't exceed the container */
-		table-layout: fixed; /* Enforces fixed column widths */
-		border-collapse: collapse;
-	}
-
-	td {
-		padding: 8px;
-		border: 1px solid #ddd;
-		word-wrap: break-word; /* Breaks long words */
-		overflow-wrap: break-word;
-	}
-</style>
-
 <AuthorizeView>
-	<h1>You are authorize! <button class="btn btn-primary" @onclick="Logout">Logout</button></h1>
-	<hr />
+    <h1>
+        You are authorize!
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Logout">Logout</MudButton>
+    </h1>
+    <hr />
+    <h3>User Information:</h3>
 
-	<h3>User Information:</h3>
+    <MudTimeline Style="width: 26% !important;">
+        <MudTimelineItem>
+            <MudText>@Role</MudText>
+            <MudText>Profile</MudText>
+        </MudTimelineItem>
+        <MudTimelineItem>
+            <MudText>@Email</MudText>
+        </MudTimelineItem>
+        <MudTimelineItem Color="Color.Error">
+            <MudText>@TokenExpired</MudText>
+            <MudText>Token Expired</MudText>
+        </MudTimelineItem>
+        <MudTimelineItem Color="Color.Success">
+            <MudText>@currentTime</MudText>
+            <MudText>Current Time</MudText>
+        </MudTimelineItem>
+    </MudTimeline>
 
-	<table>
-		<tr>
-			<td style="width:200px">Email</td>
-			<td>@Email</td>
-		</tr>
-		<tr>
-			<td>Role</td>
-			<td>@Role</td>
-		</tr>
-		<tr>
-			<td>Access Token</td>
-			<td class="td-value">@Token</td>
-		</tr>
-		<tr>
-			<td>Date Time Expired</td>
-			<td>@TokenExpired</td>
-		</tr>
-		<tr>
-			<td>Date Time Now</td>
-			<td>@currentTime</td>
-		</tr>
-	</table>
 </AuthorizeView>
 
 @code {
-	public string Email { get; set; }
-	public string Role { get; set; }
-	public string Token { get; set; }
-	public DateTime TokenExpired { get; set; }
-	public DateTime currentTime { get; set; }
-	public bool IsVerified { get; set; }
+    public string? Email { get; set; }
+    public string? Role { get; set; }
+    public string? Token { get; set; }
+    public DateTime TokenExpired { get; set; }
+    public DateTime currentTime { get; set; }
+    public bool IsVerified { get; set; }
     private Timer? timer;
 
-	protected override async Task OnInitializedAsync()
-	{
-		await InitialValues();
+    protected override async Task OnInitializedAsync()
+    {
+        await InitialValues();
 
-		// Create and start the timer
-		timer = new Timer(UpdateClock, null, 0, 1000);
-	}
+        // Create and start the timer
+        timer = new Timer(UpdateClock, null, 0, 1000);
+    }
 
-	private async Task Logout()
-	{
-		await AuthService.Logout();
-	}
+    private async Task Logout()
+    {
+        await AuthService.Logout();
+    }
 
-	private async Task InitialValues()
-	{
-		var state = await AuthStateProvider.GetAuthenticationStateAsync();
-		var user = state.User;
-		if (user.Identity.IsAuthenticated)
-		{
-			Token = await AccessTokenService.GetToken();
-			Email = user.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
-			Role = user.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Role)?.Value;
+    private async Task InitialValues()
+    {
+        var state = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = state.User;
+        if (user.Identity.IsAuthenticated)
+        {
+            Token = await AccessTokenService.GetToken();
+            Email = user.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
+            Role = user.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Role)?.Value;
 
-			var expires = user.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Exp).Value;
-			if (long.TryParse(expires, out var exp))
-			{
-				TokenExpired = DateTimeOffset.FromUnixTimeSeconds(exp).LocalDateTime;
-			}
-		}
-	}
+            var expires = user.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Exp).Value;
+            if (long.TryParse(expires, out var exp))
+            {
+                TokenExpired = DateTimeOffset.FromUnixTimeSeconds(exp).LocalDateTime;
+            }
+        }
+    }
 
-	private void UpdateClock(object state)
-	{
-		currentTime = DateTime.Now;
+    private void UpdateClock(object state)
+    {
+        currentTime = DateTime.Now;
         InvokeAsync(StateHasChanged);
     }
 }
