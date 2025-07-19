@@ -114,22 +114,39 @@
                     Sign in
                 </button>
             </div>
+            <MudAlert Severity="Severity.Error"
+                      Elevation="4"
+                      Dense="true"
+                      Variant="Variant.Filled"
+                      Style="margin-bottom: 16px;"
+                      Class="fade-alert"
+                      Visible="@string.IsNullOrEmpty(ErrorMessage)">
+                @ErrorMessage
+            </MudAlert>
         </div>
     </div>
 </div>
 
 @code {
 
-    public string Email { get; set; }
-    public string Password { get; set; }
+    public string? Email { get; set; }
+    public string? Password { get; set; }
+    public string? ErrorMessage { get; set; } = string.Empty;
 
     private async Task OnLogin()
     {
         var result = await AuthService.LoginAsync(Email, Password);
         if (result)
         {
+            ErrorMessage = string.Empty;
             NavigationManager.NavigateTo("/");
+            StateHasChanged();
         }
-        
+        else
+        {
+            ErrorMessage = "Invalid email or password.";
+            StateHasChanged();
+        }
+
     }
 }

@@ -23,7 +23,7 @@ public class AuthService : IAuthService
         _refreshTokenRepository = refreshTokenRepository;
     }
 
-    public async Task<LoginResponseDto> LoginAsync(LoginDto loginDto, CancellationToken cancellationToken)
+    public async Task<Result<LoginResponseDto>> LoginAsync(LoginDto loginDto, CancellationToken cancellationToken)
     {
         try
         {
@@ -32,11 +32,13 @@ public class AuthService : IAuthService
             if (user == null || !user.IsActive)
             {
                 _logger.LogWarning("Tentativa de login para usuário inexistente ou inativo: {Email}", loginDto.Email);
+                return Result<LoginResponseDto>.Failure("Usuário não encontrado ou inativo");
             }
 
             if (!VerifyPassword(loginDto.Password, user.PasswordHash))
             {
                 _logger.LogWarning("Tentativa de login com senha incorreta para usuário: {Email}", loginDto.Email);
+                return Result<LoginResponseDto>.Failure("Senha incorreta");
             }
 
             var token = GenerateJwtToken(user);
@@ -49,7 +51,9 @@ public class AuthService : IAuthService
 
             _logger.LogInformation("Login bem-sucedido para usuário: {Email}", loginDto.Email);
 
-            return new LoginResponseDto { AccessToken = token, RefreshToken = refreshTokenDto.Token };
+            var response = new LoginResponseDto { AccessToken = token, RefreshToken = refreshTokenDto.Token };
+
+            return Result<LoginResponseDto>.Success(response);
         }
         catch (Exception ex)
         {
