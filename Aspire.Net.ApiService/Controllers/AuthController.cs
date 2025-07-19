@@ -12,34 +12,23 @@ public class AuthController(IAuthService authService, ILogger<AuthController> lo
     private readonly IAuthService _authService = authService;
     private readonly ILogger<AuthController> _logger = logger;
 
-    /// <summary>
-    /// Realiza login e retorna token JWT
-    /// </summary>
-    /// <param name="loginDto">Dados de login</param>
-    /// <returns>Token JWT</returns>
     [HttpPost("login")]
     [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] LoginDto loginDto, CancellationToken cancellationToken)
     {
-        try
+        _logger.LogInformation("Tentativa de login para usuário: {Email}", loginDto.Email);
+
+        var result = await _authService.LoginAsync(loginDto, cancellationToken);
+
+        if (result.IsFailure)
         {
-            _logger.LogInformation("Tentativa de login para usuário: {Email}", loginDto.Email);
-
-            var token = await _authService.LoginAsync(loginDto, cancellationToken);
-
-            if (token == null)
-            {
-                return Unauthorized(new { message = "Credenciais inválidas" });
-            }
-
-            return Ok(new { token, message = "Login realizado com sucesso" });
+            _logger.LogWarning("Falha no login para usuário {Email}: {Erro}", loginDto.Email, result.Error);
+            return Unauthorized(new { message = result.Error });
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Erro durante o login");
-            return StatusCode(500, new { message = "Erro interno do servidor" });
-        }
+
+        return Ok(new { token = result.Value, message = "Login realizado com sucesso" });
     }
+
 
     /// <summary>
     /// Registra um novo usuário

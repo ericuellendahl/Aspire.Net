@@ -25,13 +25,13 @@ builder.Services.AddScoped<AuthApiClientService>();
 
 builder.Services.AddHttpClient("ApiClient", client =>
     {
-        client.BaseAddress = new Uri("http://localhost:5000/");
+        client.BaseAddress = new (builder.Configuration["BaseUrl"]!);
     });
 
 builder.Services.AddHttpClient<ProductApiClientService>(client =>
     {
         //client.BaseAddress = new("https+http://apiservice");
-        client.BaseAddress = new("http://localhost:5000/");
+        client.BaseAddress = new(builder.Configuration["BaseUrl"]!);
     });
 
 builder.Services.AddAuthorization();
