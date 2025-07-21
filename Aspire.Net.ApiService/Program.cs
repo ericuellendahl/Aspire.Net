@@ -63,7 +63,7 @@ builder.Services.AddHealthChecks()
 
 builder.Services.AddHealthChecksUI(options =>
 {
-    options.SetEvaluationTimeInSeconds(10000); 
+    options.SetEvaluationTimeInSeconds(10000);
     options.AddHealthCheckEndpoint("API", "/health");
 }).AddInMemoryStorage();
 
@@ -141,6 +141,17 @@ builder.Services.AddSwaggerGen(c =>
     }
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CorsPolicy", policy =>
+    {
+        policy.WithOrigins(builder.Configuration["Site:Angular"]!)
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
+});
+
 var app = builder.Build();
 
 app.UseStatusCodePages(async context =>
@@ -179,6 +190,8 @@ if (app.Environment.IsDevelopment())
         options.ApiPath = "/hc-json";
     });
 }
+
+app.UseCors("CorsPolicy");
 
 app.UseHttpsRedirection();
 
