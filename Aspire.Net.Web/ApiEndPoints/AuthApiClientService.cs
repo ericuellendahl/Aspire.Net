@@ -1,4 +1,5 @@
-﻿using Aspire.Net.Web.DTOs.Auth;
+﻿using Aspire.Net.Web.Components.Pages;
+using Aspire.Net.Web.DTOs.Auth;
 using Aspire.Net.Web.Services;
 using Microsoft.AspNetCore.Components;
 using System.Net.Http.Headers;
@@ -68,6 +69,11 @@ namespace Aspire.Net.Web.ApiEndPoints
             await _refreshTokenService.Delete();
 
             _navigationManager.NavigateTo("/login", forceLoad: true);
+        }
+
+        public async Task RegisterAsync(RegisterAccountForm registerAccount)
+        {
+            await _httpClient.PostAsJsonAsync("Auth/register", registerAccount);
         }
     }
 }

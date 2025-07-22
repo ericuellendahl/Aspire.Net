@@ -22,7 +22,17 @@ namespace Aspire.Net.Web.Security
                     return await MarkAsUnauthenticated();
 
                 var readJWT = new JwtSecurityTokenHandler().ReadJwtToken(token);
-                var identity = new ClaimsIdentity(readJWT.Claims, "JWT");
+
+                var mappedClaims = readJWT.Claims.Select(c =>
+                {
+                    if (c.Type == "Role")
+                        return new Claim(ClaimTypes.Role, c.Value);
+                    if (c.Type == "Email")
+                        return new Claim(ClaimTypes.Email, c.Value);
+                    return c;
+                });
+            
+                var identity = new ClaimsIdentity(mappedClaims, "JWT");
                 var principal = new ClaimsPrincipal(identity);
 
                 return await Task.FromResult(new AuthenticationState(principal));

@@ -1,0 +1,61 @@
+﻿@page "/register"
+@inject AuthApiClientService AuthService
+@rendermode InteractiveServer
+
+
+@if (success)
+{
+    <MudAlert Severity="Severity.Success"
+              ContentAlignment="HorizontalAlignment.Left"
+              Style="width: 17%;">@MessagemSuccess</MudAlert>
+}
+<p></p>
+
+<MudText Style="font-size: 3rem;">sign In</MudText>
+
+<EditForm Model="@model" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+    <MudGrid>
+        <MudItem xs="12" sm="7">
+            <MudCard>
+                <MudCardContent>
+                    <MudTextField Label="First name" HelperText="Max. 8 characters"
+                                  @bind-Value="model.Username" For="@(() => model.Username)" />
+                    <MudTextField Label="Email" Class="mt-3"
+                                  @bind-Value="model.Email" For="@(() => model.Email)" />
+                    <MudTextField Label="Password" HelperText="Choose a strong password" Class="mt-3"
+                                  @bind-Value="model.Password" For="@(() => model.Password)" InputType="InputType.Password" />
+                    <MudTextField Label="Password" HelperText="Repeat the password" Class="mt-3"
+                                  @bind-Value="model.ConfirmPassword" For="@(() => model.ConfirmPassword)" InputType="InputType.Password" />
+                    <MudTextField Label="Role" HelperText="Choose a role" Class="mt-3"
+                                  @bind-Value="model.Role" For="@(() => model.Role)" InputType="InputType.Text" />
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Register</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>       
+    </MudGrid>
+
+</EditForm>
+
+
+@code {
+    RegisterAccountForm model = new RegisterAccountForm();
+    bool success = false;
+    string MessagemSuccess = string.Empty;
+
+    private async Task OnValidSubmit(EditContext context)
+    {
+        await AuthService.RegisterAsync(model);
+        MessagemSuccess = "User created success!";
+        
+        success = true;
+        StateHasChanged();
+
+        await Task.Delay(2000);
+
+        success = false;
+        StateHasChanged();
+    }
+}
