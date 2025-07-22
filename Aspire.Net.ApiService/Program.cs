@@ -72,6 +72,17 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
                                                     npgsqlOptions.MigrationsHistoryTable(HistoryRepository.DefaultTableName, "public"))
                 .UseSnakeCaseNamingConvention());
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CorsPolicy", policy =>
+    {
+        policy.WithOrigins(builder.Configuration["Site:Angular"]!)
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
+});
+
 // Configuração do JWT
 builder.Services.AddAuthentication(options =>
 {
@@ -90,7 +101,7 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = jwtSettings["Issuer"],
         ValidAudience = jwtSettings["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"])),
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!)),
         ClockSkew = TimeSpan.Zero
     };
 });
@@ -139,17 +150,6 @@ builder.Services.AddSwaggerGen(c =>
     {
         c.IncludeXmlComments(xmlPath);
     }
-});
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("CorsPolicy", policy =>
-    {
-        policy.WithOrigins(builder.Configuration["Site:Angular"]!)
-              .AllowAnyMethod()
-              .AllowAnyHeader()
-              .AllowCredentials();
-    });
 });
 
 var app = builder.Build();
