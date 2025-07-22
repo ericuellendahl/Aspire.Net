@@ -63,7 +63,7 @@ builder.Services.AddHealthChecks()
 
 builder.Services.AddHealthChecksUI(options =>
 {
-    options.SetEvaluationTimeInSeconds(10000); 
+    options.SetEvaluationTimeInSeconds(10000);
     options.AddHealthCheckEndpoint("API", "/health");
 }).AddInMemoryStorage();
 
@@ -71,6 +71,17 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
                                                     options.UseNpgsql(connectionString, npgsqlOptions =>
                                                     npgsqlOptions.MigrationsHistoryTable(HistoryRepository.DefaultTableName, "public"))
                 .UseSnakeCaseNamingConvention());
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CorsPolicy", policy =>
+    {
+        policy.WithOrigins(builder.Configuration["Site:Angular"]!)
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
+});
 
 // Configuração do JWT
 builder.Services.AddAuthentication(options =>
@@ -90,7 +101,7 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = jwtSettings["Issuer"],
         ValidAudience = jwtSettings["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"])),
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!)),
         ClockSkew = TimeSpan.Zero
     };
 });
@@ -179,6 +190,8 @@ if (app.Environment.IsDevelopment())
         options.ApiPath = "/hc-json";
     });
 }
+
+app.UseCors("CorsPolicy");
 
 app.UseHttpsRedirection();
 
