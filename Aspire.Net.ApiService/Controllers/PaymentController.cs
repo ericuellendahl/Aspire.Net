@@ -33,6 +33,7 @@ public class PaymentController(ILogger<PaymentController> logger, IPaymentServic
     }
 
     [HttpGet("{id}")]
+    [Authorize]
     public async Task<ActionResult<PaymentResponseDto>> ObterPagamento(int id)
     {
         try
