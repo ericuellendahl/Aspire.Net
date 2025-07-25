@@ -1,13 +1,15 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-builder.AddProject<Projects.Aspire_Net_ApiService>("apiservice");
+var apiservice = builder.AddProject<Projects.Aspire_Net_ApiService>("apiservice");
 
 builder.AddProject<Projects.Apire_Worker>("worker");
 
-builder.AddProject<Projects.Aspire_ApiGateway>("apigateway");
+var apigateway = builder.AddProject<Projects.Aspire_ApiGateway>("apigateway");
 
 builder.AddProject<Projects.Aspire_Net_Web>("webfrontend")
-       .WithExternalHttpEndpoints();
+       .WithExternalHttpEndpoints()
+       .WithReference(apiservice)
+       .WithReference(apigateway);
 
 
 builder.Build().Run();

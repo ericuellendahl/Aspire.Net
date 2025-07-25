@@ -6,24 +6,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Aspire.Net.ApiService.Application.Services
 {
-    public class ProductService(ApplicationDbContext context, ILogger<ProductService> logger, CacheService cacheService) : IProductService
+    public class ProductService(ApplicationDbContext _context, ILogger<ProductService> _logger, CacheService _cacheService) : IProductService
     {
-
-        private readonly ApplicationDbContext _context = context;
-        private readonly ILogger<ProductService> _logger = logger;
-        private readonly CacheService _cacheService = cacheService;
-
-        const string keyProducts = "products";
-
         public async Task<IEnumerable<ProductDto>?> GetAllProductsAsync(int page, int pageSize)
         {
             _logger.LogInformation("Fetching all active products from the database.");
 
-            //var cachedProducts = await _cacheService.GetAsync<IEnumerable<ProductDto>>(keyProducts);
-            //if (cachedProducts != null)
-            //{
-            //    return cachedProducts;
-            //}
+            string keyProducts = $"Idempotent_{page}{pageSize}";
+
+            var cachedProducts = await _cacheService.GetAsync<IEnumerable<ProductDto>>(keyProducts);
+            if (cachedProducts != null)
+            {
+                return cachedProducts;
+            }
 
             var products = await _context.Products
                                         .AsNoTracking()
@@ -33,7 +28,7 @@ namespace Aspire.Net.ApiService.Application.Services
                                         .Take(pageSize)
                                         .ToListAsync();
 
-            //await _cacheService.SetAsync(keyProducts, products.Select(MapToDto), TimeSpan.FromMinutes(10));
+            await _cacheService.SetAsync(keyProducts, products.Select(MapToDto), TimeSpan.FromMinutes(2));
 
             return products.Select(MapToDto);
         }
